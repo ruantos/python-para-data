@@ -1,0 +1,408 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyMJ2Bot0sgPvRhzqBtkOOtv",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/ruantos/python-para-data/blob/main/Alterando%20nome%20das%20colunas\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Installing the hard way"
+      ],
+      "metadata": {
+        "id": "276uTBKhDhqC"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Installing dependencies\n",
+        "1. install java\n",
+        "2. downloads spark tar\n",
+        "3. unzip it\n",
+        "4. pip install findspark\n"
+      ],
+      "metadata": {
+        "id": "FSGbATn5DwY2"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!sudo apt update\n",
+        "!apt-get install openjdk-8-jdk-headless -qq > /dev/null\n",
+        "!wget -q http://archive.apache.org/dist/spark/spark-3.5.0/spark-3.5.0-bin-hadoop3.tgz\n",
+        "!tar xf spark-3.5.0-bin-hadoop3.tgz\n",
+        "!pip install -q findspark\n",
+        "\n",
+        "import os\n",
+        "import findspark\n",
+        "\n",
+        "os.environ[\"JAVA_HOME\"] = \"/usr/lib/jvm/java-8-openjdk-amd64\"\n",
+        "os.environ[\"SPARK_HOME\"] = \"/content/spark-3.5.0-bin-hadoop3\"\n",
+        "\n",
+        "findspark.init()\n"
+      ],
+      "metadata": {
+        "id": "SalQfeU0AUVu",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "outputId": "6a408618-41e8-4039-ee1f-2b55d7a18737"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[33m\r0% [Working]\u001b[0m\r            \rGet:1 https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/ InRelease [3,632 B]\n",
+            "\u001b[33m\r0% [Connecting to archive.ubuntu.com (185.125.190.81)] [Waiting for headers] [1\u001b[0m\u001b[33m\r0% [Connecting to archive.ubuntu.com (185.125.190.81)] [Waiting for headers] [C\u001b[0m\r                                                                               \rHit:2 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64  InRelease\n",
+            "Get:3 http://security.ubuntu.com/ubuntu jammy-security InRelease [129 kB]\n",
+            "Hit:4 http://archive.ubuntu.com/ubuntu jammy InRelease\n",
+            "Get:5 https://r2u.stat.illinois.edu/ubuntu jammy InRelease [6,555 B]\n",
+            "Get:6 http://archive.ubuntu.com/ubuntu jammy-updates InRelease [128 kB]\n",
+            "Get:7 https://r2u.stat.illinois.edu/ubuntu jammy/main all Packages [9,154 kB]\n",
+            "Get:8 http://security.ubuntu.com/ubuntu jammy-security/universe amd64 Packages [1,269 kB]\n",
+            "Get:9 http://archive.ubuntu.com/ubuntu jammy-backports InRelease [127 kB]\n",
+            "Hit:10 https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy InRelease\n",
+            "Get:11 http://security.ubuntu.com/ubuntu jammy-security/main amd64 Packages [3,202 kB]\n",
+            "Hit:12 https://ppa.launchpadcontent.net/graphics-drivers/ppa/ubuntu jammy InRelease\n",
+            "Get:13 http://security.ubuntu.com/ubuntu jammy-security/restricted amd64 Packages [5,085 kB]\n",
+            "Get:14 http://archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 Packages [5,282 kB]\n",
+            "Hit:15 https://ppa.launchpadcontent.net/ubuntugis/ppa/ubuntu jammy InRelease\n",
+            "Get:16 https://r2u.stat.illinois.edu/ubuntu jammy/main amd64 Packages [2,772 kB]\n",
+            "Get:17 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [3,516 kB]\n",
+            "Get:18 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [1,575 kB]\n",
+            "Fetched 32.3 MB in 5s (6,716 kB/s)\n",
+            "Reading package lists... Done\n",
+            "Building dependency tree... Done\n",
+            "Reading state information... Done\n",
+            "36 packages can be upgraded. Run 'apt list --upgradable' to see them.\n",
+            "\u001b[1;33mW: \u001b[0mSkipping acquire of configured file 'main/source/Sources' as repository 'https://r2u.stat.illinois.edu/ubuntu jammy InRelease' does not seem to provide it (sources.list entry misspelt?)\u001b[0m\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Setting environment variables"
+      ],
+      "metadata": {
+        "id": "Pr2kiS9IEudL"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from pyspark.sql import SparkSession"
+      ],
+      "metadata": {
+        "id": "dCL7K8hiEIlO"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "spark = SparkSession \\\n",
+        "            .builder \\\n",
+        "            .appName(\"Primeira Sessão\") \\\n",
+        "            .getOrCreate()"
+      ],
+      "metadata": {
+        "id": "VjI14ZhaAptv"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Mounting your google drive"
+      ],
+      "metadata": {
+        "id": "fI0QZ8-wvPzS"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from google.colab import drive\n",
+        "drive.mount(\"/content/drive\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "yUqAg0lbQgcF",
+        "outputId": "da92a5f3-14ec-46d9-d808-61120d437ffe"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Drive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount(\"/content/drive\", force_remount=True).\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Unziping files"
+      ],
+      "metadata": {
+        "id": "lJmkjdWouZgS"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import zipfile\n",
+        "\n",
+        "zipfile \\\n",
+        "    .ZipFile('/content/drive/MyDrive/Colab Notebooks/Curso spark/empresas.zip', 'r') \\\n",
+        "    .extractall('/content/drive/MyDrive/Colab Notebooks/Curso spark/')\n",
+        "\n",
+        "zipfile \\\n",
+        "    .ZipFile('/content/drive/MyDrive/Colab Notebooks/Curso spark/estabelecimentos.zip', 'r') \\\n",
+        "    .extractall('/content/drive/MyDrive/Colab Notebooks/Curso spark/')\n",
+        "\n",
+        "zipfile \\\n",
+        "    .ZipFile('/content/drive/MyDrive/Colab Notebooks/Curso spark/socios.zip', 'r') \\\n",
+        "    .extractall('/content/drive/MyDrive/Colab Notebooks/Curso spark/')\n"
+      ],
+      "metadata": {
+        "id": "XtrnbG9CSHLB"
+      },
+      "execution_count": 17,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Creating sparks dataframes"
+      ],
+      "metadata": {
+        "id": "LE1UTeM0vKFB"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "path = {\n",
+        "    \"empresas\": \"/content/drive/MyDrive/Colab Notebooks/Curso spark/empresas\",\n",
+        "    \"estabelecimentos\": \"/content/drive/MyDrive/Colab Notebooks/Curso spark/estabelecimentos.zip\",\n",
+        "    \"socios\": \"/content/drive/MyDrive/Colab Notebooks/Curso spark/socios\"\n",
+        "    }"
+      ],
+      "metadata": {
+        "id": "Ds616rDyVyPT"
+      },
+      "execution_count": 19,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "empresas = spark.read.csv(path[\"empresas\"], sep=\";\", inferSchema=True)\n",
+        "estabelecimentos = spark.read.csv(path[\"estabelecimentos\"], sep=\";\", inferSchema=True)\n",
+        "socios = spark.read.csv(path[\"socios\"], sep=\";\", inferSchema=True)"
+      ],
+      "metadata": {
+        "id": "72PveETIWqiS"
+      },
+      "execution_count": 20,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Changing columns names"
+      ],
+      "metadata": {
+        "id": "HowUKS9WvgH2"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "empresas.limit(5).show()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "tmy1gLD3WwFY",
+        "outputId": "c89568dd-50a9-4609-fcce-86b2c3933324"
+      },
+      "execution_count": 26,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "+----+--------------------+----+---+-------+---+----+\n",
+            "| _c0|                 _c1| _c2|_c3|    _c4|_c5| _c6|\n",
+            "+----+--------------------+----+---+-------+---+----+\n",
+            "| 306|FRANCAMAR REFRIGE...|2240| 49|   0,00|  1|NULL|\n",
+            "|1355|BRASILEIRO & OLIV...|2062| 49|   0,00|  5|NULL|\n",
+            "|4820|REGISTRO DE IMOVE...|3034| 32|   0,00|  5|NULL|\n",
+            "|5347|ROSELY APARECIDA ...|2135| 50|   0,00|  5|NULL|\n",
+            "|6846|BADU E FILHOS TEC...|2062| 49|4000,00|  1|NULL|\n",
+            "+----+--------------------+----+---+-------+---+----+\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "empresasColNames = ['cnpj_basico', 'razao_social_nome_empresarial', 'natureza_juridica', 'qualificacao_do_responsavel', 'capital_social_da_empresa', 'porte_da_empresa', 'ente_federativo_responsavel']\n",
+        "estabsColNames = ['cnpj_basico', 'cnpj_ordem', 'cnpj_dv', 'identificador_matriz_filial', 'nome_fantasia', 'situacao_cadastral', 'data_situacao_cadastral', 'motivo_situacao_cadastral', 'nome_da_cidade_no_exterior', 'pais', 'data_de_inicio_atividade', 'cnae_fiscal_principal', 'cnae_fiscal_secundaria', 'tipo_de_logradouro', 'logradouro', 'numero', 'complemento', 'bairro', 'cep', 'uf', 'municipio', 'ddd_1', 'telefone_1', 'ddd_2', 'telefone_2', 'ddd_do_fax', 'fax', 'correio_eletronico', 'situacao_especial', 'data_da_situacao_especial']\n",
+        "sociosColNames = ['cnpj_basico', 'identificador_de_socio', 'nome_do_socio_ou_razao_social', 'cnpj_ou_cpf_do_socio', 'qualificacao_do_socio', 'data_de_entrada_sociedade', 'pais', 'representante_legal', 'nome_do_representante', 'qualificacao_do_representante_legal', 'faixa_etaria']"
+      ],
+      "metadata": {
+        "id": "zWa_vcNouPbk"
+      },
+      "execution_count": 35,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def rename_col(df, col_names):\n",
+        "    for index, name in enumerate(col_names):\n",
+        "        # enumerate retorna uma tupla contendo\n",
+        "        # o indice e cada valor no array\n",
+        "\n",
+        "        # params são o nome da coluna e o novo nome\n",
+        "        df = df.withColumnRenamed(f\"_c{index}\", name)\n",
+        "    return df"
+      ],
+      "metadata": {
+        "id": "phZRPBPhwos7"
+      },
+      "execution_count": 33,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# empresas = rename_col(empresas, empresasColNames)\n",
+        "estabelecimentos = rename_col(estabelecimentos, estabsColNames)\n",
+        "socios = rename_col(socios, sociosColNames)"
+      ],
+      "metadata": {
+        "id": "vWuhHL5bw8yc"
+      },
+      "execution_count": 36,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "socios.limit(5).show()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "xflZWBjnxeNT",
+        "outputId": "032d8a91-d52c-4907-9eec-2a3d91e53f3e"
+      },
+      "execution_count": 37,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "+-----------+----------------------+-----------------------------+--------------------+---------------------+-------------------------+----+-------------------+---------------------+-----------------------------------+------------+\n",
+            "|cnpj_basico|identificador_de_socio|nome_do_socio_ou_razao_social|cnpj_ou_cpf_do_socio|qualificacao_do_socio|data_de_entrada_sociedade|pais|representante_legal|nome_do_representante|qualificacao_do_representante_legal|faixa_etaria|\n",
+            "+-----------+----------------------+-----------------------------+--------------------+---------------------+-------------------------+----+-------------------+---------------------+-----------------------------------+------------+\n",
+            "|        411|                     2|         LILIANA PATRICIA ...|         ***678188**|                   22|                 19940725|NULL|        ***000000**|                 NULL|                                  0|           7|\n",
+            "|        411|                     2|         CRISTINA HUNDERTMARK|         ***637848**|                   28|                 19940725|NULL|        ***000000**|                 NULL|                                  0|           7|\n",
+            "|       5813|                     2|         CELSO EDUARDO DE ...|         ***786068**|                   49|                 19940516|NULL|        ***000000**|                 NULL|                                  0|           8|\n",
+            "|       5813|                     2|         EDUARDO BERRINGER...|         ***442348**|                   49|                 19940516|NULL|        ***000000**|                 NULL|                                  0|           5|\n",
+            "|      14798|                     2|          HANNE MAHFOUD FADEL|         ***760388**|                   49|                 19940609|NULL|        ***000000**|                 NULL|                                  0|           8|\n",
+            "+-----------+----------------------+-----------------------------+--------------------+---------------------+-------------------------+----+-------------------+---------------------+-----------------------------------+------------+\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "socios.printSchema()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ARUPlW6iywvK",
+        "outputId": "b29ec279-164f-407b-aa54-3f7fc0d7261e"
+      },
+      "execution_count": 39,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "root\n",
+            " |-- cnpj_basico: integer (nullable = true)\n",
+            " |-- identificador_de_socio: integer (nullable = true)\n",
+            " |-- nome_do_socio_ou_razao_social: string (nullable = true)\n",
+            " |-- cnpj_ou_cpf_do_socio: string (nullable = true)\n",
+            " |-- qualificacao_do_socio: integer (nullable = true)\n",
+            " |-- data_de_entrada_sociedade: integer (nullable = true)\n",
+            " |-- pais: integer (nullable = true)\n",
+            " |-- representante_legal: string (nullable = true)\n",
+            " |-- nome_do_representante: string (nullable = true)\n",
+            " |-- qualificacao_do_representante_legal: integer (nullable = true)\n",
+            " |-- faixa_etaria: integer (nullable = true)\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "7p7iJrF-y7TF"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
